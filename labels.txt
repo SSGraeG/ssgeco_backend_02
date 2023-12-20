@@ -1,0 +1,2 @@
+0 nowash
+1 wash
