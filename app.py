@@ -166,7 +166,7 @@ def image():
         file = request.files['image']
         result = modeling.predict_image(file)
         if result == "wash":
-            return jsonify({"message": "성공"}), 200, {'Content-Type': 'application/json'}
+            return jsonify({"message": "성공ㅇㅇ"}), 200, {'Content-Type': 'application/json'}
         else:
             return jsonify({"message": "실패"}), 200, {'Content-Type': 'application/json'}
     except Exception as e:
