@@ -82,7 +82,7 @@ def get_coupon():
     try:
         with connect(**connectionString) as con:
             cursor = con.cursor()
-            sql = "SELECT * FROM coupon order by usepoint"
+            sql = "SELECT * FROM mileage_category where category='coupon' order by usepoint"
             cursor.execute(sql)
             coupon_list = cursor.fetchall()
             con.commit()
@@ -104,7 +104,7 @@ def get_donation():
         print(e)
 
 
-def use_coupon():
+def use_coupon(user_email, ):
     try:
         with connect(**connectionString) as con:
             cursor = con.cursor()

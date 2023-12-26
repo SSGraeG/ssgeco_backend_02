@@ -33,18 +33,25 @@ def coupon_list():
     try:
         coupon_lists = database.get_coupon()
         return jsonify({'coupon': coupon_lists}), 200
-    except Exception as e:
+        # return jsonify({'coupon': 'ss'}), 200
+    except Exception as e:  
         print(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
 
 
-@mileage_bp.route('/coupon_use/<coupon_id>', methods=["PUT"])
-def coupon_use(coupon_id):
-    if request.method == 'PUT':
+@mileage_bp.route('/coupon_use', methods=["POST"])
+@token_required
+def coupon_use(current_user):
+    if request.method == 'POST':
         try:
-            price = request.json.get('price')
-            coupon_lists = database.get_coupon()
-            return jsonify({'coupon': coupon_lists}), 200
+            coupon_id = request.json.get('coupon_id')
+            print(current_user, coupon_id)
+            database.update_mileage(mileage_bp)
+            #tracking tabloe
+            return jsonify({'coupon': "coupon_id"}), 200
+            # price = request.json.get('price')
+            # coupon_lists = database.get_coupon()
+            # return jsonify({'coupon': coupon_lists}), 200
         except Exception as e:
             print(e)
             return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
