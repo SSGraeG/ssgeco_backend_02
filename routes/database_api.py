@@ -10,7 +10,7 @@ connectionString = {
     # 'user': 'user1',
     # 'password': '1234',
     'user': 'root',
-    # 'password': '1234',
+    'password': 'passwd',
     'charset': 'utf8',
     'cursorclass': pymysql.cursors.DictCursor
 }
@@ -73,7 +73,7 @@ def get_user(email):
             cursor.execute(sql, (email))
             user_info = cursor.fetchone()
             con.commit()
-            return user_info, 200, {'Content-Type': 'application/json'}
+            return user_info
     except Exception as e:
         print(e)
 
