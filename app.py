@@ -6,6 +6,7 @@ from routes.mileage import mileage_bp
 from routes.mypage import mypage_bp
 from flask_jwt_extended import JWTManager
 
+
 def create_app():
     app = Flask(__name__, static_folder='./resources/')
     app.config["JWT_SECRET_KEY"] = "super-secret"

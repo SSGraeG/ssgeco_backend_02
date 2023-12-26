@@ -62,6 +62,18 @@ def donation_list():
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
 
 
+@mileage_bp.route('/donation_use', methods=["POST"])
+@token_required
+def donation_use(current_user):
+    if request.method == 'POST':
+        try:
+            donation_id = request.json.get('donation_id')
+            current_mileage = database.use_donation(current_user, donation_id)
+            return jsonify({'mileage': current_mileage}), 200
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
+
 
 
 
