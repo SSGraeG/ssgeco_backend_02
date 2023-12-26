@@ -83,3 +83,26 @@ CREATE TABLE IF NOT EXISTS `eco`.`coupon_list` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
+use eco;
+INSERT INTO `mileage_category` (`name`, `usepoint`, `category`) VALUES
+('1000원 쿠폰', 1000, 'coupon'),
+('2000원 쿠폰', 2000, 'coupon'),
+('연탄 봉사', 1000, 'donation');
+
+-- user 테이블에 더미 데이터 삽입
+INSERT INTO `user` (`email`, `name`, `phone`, `address`, `mileage`, `password`) VALUES
+('test@test.com', 'User One', '123-456-7890', 'Address 1', 200, 'testtest'),
+('user2@example.com', 'User Two', '987-654-3210', 'Address 2', 150, 'password2'),
+('user3@example.com', 'User Three', '111-222-3333', 'Address 3', 300, 'password3');
+
+-- milege_tracking 테이블에 더미 데이터 삽입
+INSERT INTO `milege_tracking` (`use_date`, `user_email`, `mileage_category_id`, `before_mileage`, `after_mileage`) VALUES
+('2023-12-01 10:00:00', 'test@test.com', 4, 200, 150),
+('2023-12-02 11:30:00', 'test@test.com', 5, 150, 75),
+('2023-12-03 09:45:00', 'user3@example.com', 6, 300, 200);
+
+-- coupon_list 테이블에 더미 데이터 삽입
+INSERT INTO `coupon_list` (`expired_date`, `user_email`, `mileage_category_id`) VALUES
+('2024-01-01 00:00:00', 'test@test.com', 4),
+('2024-01-15 00:00:00', 'user2@example.com', 5),
+('2024-01-31 00:00:00', 'test@test.com', 6);
