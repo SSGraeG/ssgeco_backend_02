@@ -3,7 +3,9 @@ from flask_cors import CORS
 from routes.user import user_bp
 from routes.modeling import model_bp
 from routes.mileage import mileage_bp
+from routes.mypage import mypage_bp
 from flask_jwt_extended import JWTManager
+
 
 def create_app():
     app = Flask(__name__, static_folder='./resources/')
@@ -15,6 +17,7 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(model_bp)
     app.register_blueprint(mileage_bp)
+    app.register_blueprint(mypage_bp)
 
     # CORS 설정
     CORS(app, resources={r"/*": {"origins": "*"}})
@@ -27,4 +30,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', debug=True)
