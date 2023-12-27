@@ -77,7 +77,7 @@ def predict_image(file):
 
 
 @model_bp.route('/image', methods=["POST"])
-@token_required
+# @token_required
 def image():
     try:
         file = request.files['image']

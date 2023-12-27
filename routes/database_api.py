@@ -124,14 +124,11 @@ def use_coupon(user_email, coupon_id):
 
             sql = "UPDATE user SET mileage = mileage - %s WHERE email = %s"
             cursor.execute(sql, (use_point, user_email))
-            result = cursor.fetchone()
+            cursor.fetchone()
             con.commit()
             affected_rows = cursor.rowcount
+
             if affected_rows > 0:
-                # additional_sql = "SELECT mileage FROM user where email = %s"
-                # cursor.execute(additional_sql, (user_email,))
-                # use_point = cursor.fetchall()[0]['mileage']
-                # con.commit()
                 mileage_tracking_sql = "INSERT INTO milege_tracking (user_email, mileage_category_id, before_mileage, after_mileage) VALUES (%s, %s, %s, %s)"
                 cursor.execute(mileage_tracking_sql, (user_email, coupon_id, mileage_before, mileage_after))
                 con.commit()
@@ -161,14 +158,10 @@ def use_donation(user_email, donation_id):
 
             sql = "UPDATE user SET mileage = mileage - %s WHERE email = %s"
             cursor.execute(sql, (use_point, user_email))
-            result = cursor.fetchone()
+            cursor.fetchone()
             con.commit()
             affected_rows = cursor.rowcount
             if affected_rows > 0:
-                # additional_sql = "SELECT mileage FROM user where email = %s"
-                # cursor.execute(additional_sql, (user_email,))
-                # use_point = cursor.fetchall()[0]['mileage']
-                # con.commit()
                 mileage_tracking_sql = "INSERT INTO milege_tracking (user_email, mileage_category_id, before_mileage, after_mileage) VALUES (%s, %s, %s, %s)"
                 cursor.execute(mileage_tracking_sql, (user_email, donation_id, mileage_before, mileage_after))
                 con.commit()
@@ -177,3 +170,14 @@ def use_donation(user_email, donation_id):
         print(e)
         return 500
 
+
+def get_user_mileage(user_email):
+    try:
+        with connect(**connectionString) as con:
+            cursor = con.cursor()
+            sql = "SELECT mileage FROM user where email = %s"
+            cursor.execute(sql, (user_email,))
+            user_mileage = cursor.fetchone()['mileage']
+            return user_mileage
+    except Exception as e:
+        print(e)
