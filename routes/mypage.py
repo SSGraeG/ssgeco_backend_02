@@ -42,3 +42,19 @@ def get_user_profile(current_user):
             return jsonify({'message': 'User not found'}), 404
     else:
         return jsonify({'message': 'Invalid user data'}), 400
+
+
+@mypage_bp.route('/get_mileage_tracking', methods=['GET'])
+@token_required
+def get_mileage_tracking(current_user):
+    if current_user:
+        user_info = database.get_user(current_user)
+        if user_info:
+            name = user_info.get('name')
+            email = user_info.get('email')
+            address = user_info.get('address')
+            return jsonify({'name': name, 'email': email, 'address': address})
+        else:
+            return jsonify({'message': 'User not found'}), 404
+    else:
+        return jsonify({'message': 'Invalid user data'}), 400

@@ -4,13 +4,14 @@ from datetime import datetime
 
 
 connectionString = {
-    'host': '127.0.0.1',
+    # 'host': '127.0.0.1',
+    'host': 'eco-rds.cykey8vytdto.ap-northeast-2.rds.amazonaws.com',
     'port': 3306,
-    'database': 'eco',
-    # 'user': 'user1',
+    'database': 'company_2',
+    'user': 'admin',
+    # 'user': 'root',
     # 'password': '1234',
-    'user': 'root',
-    # 'password': 'passwd',
+    'password': 'password',
     'charset': 'utf8',
     'cursorclass': pymysql.cursors.DictCursor
 }
@@ -108,13 +109,16 @@ def use_coupon(user_email, coupon_id):
     try:
         with connect(**connectionString) as con:
             cursor = con.cursor()
+
             sql = "SELECT usepoint FROM mileage_category where id = %s"
             cursor.execute(sql, (coupon_id,))
             result = cursor.fetchall()
             use_point = result[0]['usepoint']
             con.commit()
+
         with connect(**connectionString) as con:
             cursor = con.cursor()
+
             mileage_before_sql = "SELECT mileage FROM user WHERE email = %s"
             cursor.execute(mileage_before_sql, (user_email,))
             result = cursor.fetchall()
@@ -126,8 +130,8 @@ def use_coupon(user_email, coupon_id):
             cursor.execute(sql, (use_point, user_email))
             cursor.fetchone()
             con.commit()
-            affected_rows = cursor.rowcount
 
+            affected_rows = cursor.rowcount
             if affected_rows > 0:
                 mileage_tracking_sql = "INSERT INTO milege_tracking (user_email, mileage_category_id, before_mileage, after_mileage) VALUES (%s, %s, %s, %s)"
                 cursor.execute(mileage_tracking_sql, (user_email, coupon_id, mileage_before, mileage_after))
@@ -171,13 +175,37 @@ def use_donation(user_email, donation_id):
         return 500
 
 
+# 사용자 현재 마일리지 잔액 가져오기
 def get_user_mileage(user_email):
     try:
         with connect(**connectionString) as con:
             cursor = con.cursor()
+
             sql = "SELECT mileage FROM user where email = %s"
             cursor.execute(sql, (user_email,))
             user_mileage = cursor.fetchone()['mileage']
+
             return user_mileage
+
+    except Exception as e:
+        print(e)
+
+
+# AI 판독 성공 후 마일리지 적립
+def add_mileage(user_email):
+    try:
+        with connect(**connectionString) as con:
+            cursor = con.cursor()
+
+            sql = "UPDATE user SET mileage = mileage + 100 WHERE email = %s"
+            cursor.execute(sql, (user_email, ))
+            con.commit()
+
+            select_sql = "SELECT mileage FROM user WHERE email = %s"
+            cursor.execute(select_sql, (user_email,))
+            updated_mileage = cursor.fetchone()['mileage']
+
+            return updated_mileage
+
     except Exception as e:
         print(e)
