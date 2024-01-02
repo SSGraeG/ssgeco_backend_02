@@ -5,7 +5,9 @@ from routes.modeling import model_bp
 from routes.mileage import mileage_bp
 from routes.mypage import mypage_bp
 from flask_jwt_extended import JWTManager
+import os
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def create_app():
     app = Flask(__name__, static_folder='./resources/')
