@@ -1,6 +1,7 @@
 import pymysql
 from pymysql import connect
 from datetime import datetime
+import pytz
 
 
 connectionString = {
@@ -133,8 +134,10 @@ def use_coupon(user_email, coupon_id):
 
             affected_rows = cursor.rowcount
             if affected_rows > 0:
-                mileage_tracking_sql = "INSERT INTO milege_tracking (user_email, mileage_category_id, before_mileage, after_mileage) VALUES (%s, %s, %s, %s)"
-                cursor.execute(mileage_tracking_sql, (user_email, coupon_id, mileage_before, mileage_after))
+                kst = pytz.timezone('Asia/Seoul')
+                current_date = datetime.now(kst).strftime('%Y-%m-%d')
+                mileage_tracking_sql = "INSERT INTO mileage_tracking (user_email, mileage_category_id, before_mileage, after_mileage, use_date) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(mileage_tracking_sql, (user_email, coupon_id, mileage_before, mileage_after, current_date))
                 con.commit()
                 return mileage_after
     except Exception as e:
@@ -166,8 +169,10 @@ def use_donation(user_email, donation_id):
             con.commit()
             affected_rows = cursor.rowcount
             if affected_rows > 0:
-                mileage_tracking_sql = "INSERT INTO milege_tracking (user_email, mileage_category_id, before_mileage, after_mileage) VALUES (%s, %s, %s, %s)"
-                cursor.execute(mileage_tracking_sql, (user_email, donation_id, mileage_before, mileage_after))
+                kst = pytz.timezone('Asia/Seoul')
+                current_date = datetime.now(kst).strftime('%Y-%m-%d')
+                mileage_tracking_sql = "INSERT INTO mileage_tracking (user_email, mileage_category_id, before_mileage, after_mileage, current_date) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(mileage_tracking_sql, (user_email, donation_id, mileage_before, mileage_after, current_date))
                 con.commit()
                 return mileage_after
     except Exception as e:
@@ -177,6 +182,133 @@ def use_donation(user_email, donation_id):
 
 # 사용자 현재 마일리지 잔액 가져오기
 def get_user_mileage(user_email):
+    try:
+        with connect(**connectionString) as con:
+            cursor = con.cursor()
+
+            sql = "SELECT mileage FROM user where email = %s"
+            cursor.execute(sql, (user_email,))
+            user_mileage = cursor.fetchone()['mileage']
+
+            return user_mileage
+
+    except Exception as e:
+        print(e)
+
+
+
+# def get_tracking(user_email, start_date, end_date):
+#     try:
+#         with connect(**connectionString) as con:
+#             cursor = con.cursor()
+#
+#             start_date = datetime.strptime(start_date, '%Y-%m-%d')
+#             end_date = datetime.strptime(end_date, '%Y-%m-%d')
+#
+#             select_sql = "SELECT  * FROM mileage_tracking WHERE use_date BETWEEN %s AND %s AND user_email = %s"
+#             cursor.execute(select_sql, (start_date, end_date, user_email))
+#
+#             result = cursor.fetchall()
+#             combined_result = []
+#
+#             for row in result:
+#                 mileage_category_id = row['mileage_category_id']
+#                 select_sql_category = "SELECT * FROM mileage_category WHERE id = %s"
+#                 cursor.execute(select_sql_category, (mileage_category_id,))
+#                 result_category = cursor.fetchall()
+#
+#                 combined_row = {
+#                     "mileage_tracking": row,
+#                     "mileage_category": result_category
+#                 }
+#                 combined_result.append(combined_row)
+#             print(combined_result)
+#             return combined_result
+#             # return result
+#
+#     except Exception as e:
+#         print(e)
+def get_tracking(user_email, start_date, end_date):
+    try:
+        with connect(**connectionString) as con:
+            cursor = con.cursor()
+
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+            select_sql = ("SELECT mt.*, mc.* FROM mileage_tracking mt JOIN mileage_category mc "
+                          "ON mt.mileage_category_id = mc.id "
+                          "WHERE mt.use_date BETWEEN %s AND %s AND mt.user_email = %s "
+                          "ORDER BY mt.use_date DESC")
+            cursor.execute(select_sql, (start_date, end_date, user_email))
+
+            result = cursor.fetchall()
+            combined_result = []
+
+            for row in result:
+                combined_row = {
+                    "id": row['id'],
+                    "use_date": row['use_date'].strftime('%Y-%m-%d'),
+                    "user_email": row['user_email'],
+                    "mileage_category_id": row['mileage_category_id'],
+                    "before_mileage": row['before_mileage'],
+                    "after_mileage": row['after_mileage'],
+                    "mileage_category": {
+                        "id": row['id'],
+                        "name": row['name'],
+                        "usepoint": row['usepoint'],
+                        "category": row['category']
+                    }
+                }
+                combined_result.append(combined_row)
+
+            print(combined_result)
+            return combined_result
+
+    except Exception as e:
+        print(e)
+        return None
+
+
+def get_all_tracking(user_email):
+    try:
+        with connect(**connectionString) as con:
+            cursor = con.cursor()
+
+            select_sql = ("SELECT mt.*, mc.* FROM mileage_tracking mt JOIN mileage_category mc "
+                          "ON mt.mileage_category_id = mc.id "
+                          "WHERE mt.user_email = %s "
+                          "ORDER BY mt.use_date DESC")
+            cursor.execute(select_sql, (user_email))
+
+            result = cursor.fetchall()
+            combined_result = []
+
+            for row in result:
+                combined_row = {
+                    "id": row['id'],
+                    "use_date": row['use_date'].strftime('%Y-%m-%d'),
+                    "user_email": row['user_email'],
+                    "mileage_category_id": row['mileage_category_id'],
+                    "before_mileage": row['before_mileage'],
+                    "after_mileage": row['after_mileage'],
+                    "mileage_category": {
+                        "id": row['id'],
+                        "name": row['name'],
+                        "usepoint": row['usepoint'],
+                        "category": row['category']
+                    }
+                }
+                combined_result.append(combined_row)
+
+            print(combined_result)
+            return combined_result
+
+    except Exception as e:
+        print(e)
+        return None
+# 사용자 현재 마일리지 잔액 가져오기
+def get_user_mielage(user_email):
     try:
         with connect(**connectionString) as con:
             cursor = con.cursor()
