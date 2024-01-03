@@ -4,6 +4,7 @@ from keras.models import load_model  # TensorFlow is required for Keras to work
 from PIL import Image, ImageOps  # Install pillow instead of PIL
 import numpy as np
 from authenticated_users import authenticated_users
+from . import database_api as database
 
 
 model_bp = Blueprint('model_bp', __name__)
@@ -78,12 +79,14 @@ def predict_image(file):
 
 @model_bp.route('/image', methods=["POST"])
 @token_required
-def image():
+def image(current_user):
     try:
         file = request.files['image']
         result = predict_image(file)
-        if result == "wash":
-            return jsonify({"message": "성공ㅇㅇ"}), 200, {'Content-Type': 'application/json'}
+
+        if result.rstrip() == "wash":
+            current_mileage = database.add_mileage(current_user)
+            return jsonify({"message": "성공", "mileage": current_mileage}), 200, {'Content-Type': 'application/json'}
         else:
             return jsonify({"message": "실패"}), 200, {'Content-Type': 'application/json'}
     except Exception as e:

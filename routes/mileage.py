@@ -33,7 +33,6 @@ def coupon_list():
     try:
         coupon_lists = database.get_coupon()
         return jsonify({'coupon': coupon_lists}), 200
-        # return jsonify({'coupon': 'ss'}), 200
     except Exception as e:  
         print(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
@@ -45,13 +44,8 @@ def coupon_use(current_user):
     if request.method == 'POST':
         try:
             coupon_id = request.json.get('coupon_id')
-            print(current_user, coupon_id)
-            database.update_mileage(mileage_bp)
-            #tracking tabloe
-            return jsonify({'coupon': "coupon_id"}), 200
-            # price = request.json.get('price')
-            # coupon_lists = database.get_coupon()
-            # return jsonify({'coupon': coupon_lists}), 200
+            current_mileage = database.use_coupon(current_user, coupon_id)
+            return jsonify({'mileage': current_mileage}), 200
         except Exception as e:
             print(e)
             return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
@@ -62,6 +56,32 @@ def donation_list():
     try:
         donation_lists = database.get_donation()
         return jsonify({'coupon': donation_lists}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
+
+
+@mileage_bp.route('/donation_use', methods=["POST"])
+@token_required
+def donation_use(current_user):
+    if request.method == 'POST':
+        try:
+            donation_id = request.json.get('donation_id')
+            current_mileage = database.use_donation(current_user, donation_id)
+            return jsonify({'mileage': current_mileage}), 200
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
+
+
+
+
+@mileage_bp.route('/get_user_mileage', methods=["GET"])
+@token_required
+def my_mileage(current_user):
+    try:
+        user_mileage = database.get_user_mileage(current_user)
+        return jsonify({'mileage': user_mileage}), 200
     except Exception as e:
         print(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
