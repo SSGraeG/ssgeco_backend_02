@@ -1,10 +1,6 @@
 #!/bin/bash
 cd /home/ubuntu/ssg_backend
 
-log_file="/home/ubuntu/ssg_backend/app_log.txt"
-
-touch "$log_file"
-
 echo ">>> pip install"
 pip install -r requirements.txt
 
