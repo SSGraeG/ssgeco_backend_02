@@ -8,7 +8,7 @@ on:
 env:					
   AWS_REGION: ap-northeast-2
   S3_BUCKET_NAME: userbackend
-  CODE_DEPLOY_APPLICATION_NAME: userBackend
+  CODE_DEPLOY_APPLICATION_NAME: userbackend
   CODE_DEPLOY_DEPLOY_GROUP_NAME: userBackendDeploy
 
 permissions:				
