@@ -84,7 +84,7 @@ def image(current_user):
         file = request.files['image']
         result = predict_image(file)
 
-        if result.rstrip() == "wash":
+        if result.rstrip() == "remove":
             current_mileage = database.add_mileage(current_user)
             return jsonify({"message": "성공", "mileage": current_mileage}), 200, {'Content-Type': 'application/json'}
         else:
