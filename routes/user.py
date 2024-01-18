@@ -48,6 +48,10 @@ def login():
             return jsonify({'message': '잘못된 로그인 정보'}), 401
 
 
+@user_bp.route('/')
+def test_route():
+    return jsonify({'test': 'V4'}), 200
+    
 @user_bp.route('/logout', methods=["GET"])
 @token_required
 def logout(current_user):
