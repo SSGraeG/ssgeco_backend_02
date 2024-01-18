@@ -50,7 +50,7 @@ def login():
 
 @user_bp.route('/')
 def test_route():
-    return jsonify({'test': 'V4433'}), 200
+    return jsonify({'test': 'V44s33'}), 200
     
 @user_bp.route('/logout', methods=["GET"])
 @token_required
