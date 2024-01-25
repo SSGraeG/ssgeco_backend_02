@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Flask
 from authenticated_users import authenticated_users
 from functools import wraps
 from . import database_api as database
-
+from flask import Flask
+app = Flask(__name__)
 
 mypage_bp = Blueprint('mypage', __name__)
 
@@ -17,12 +18,14 @@ def token_required(f):
 
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
-
-        if token in authenticated_users:
-            current_user = authenticated_users[token]
+        
+        is_user = database.get_user_by_token(token)
+  
+        if is_user:
+            current_user = is_user
         else:
             return jsonify({'message': 'Token is invalid!'}), 401
-        print(current_user)
+
         return f(current_user, *args, **kwargs)
 
     return decorated
@@ -57,6 +60,26 @@ def get_mileage_tracking(current_user):
             result = database.get_all_tracking(current_user)
             return jsonify({'result': result}), 200
     except Exception as e:
-        print(e)
+        app.logger.debug(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
 
+
+@mypage_bp.route('/get_mileage_info')
+@token_required
+def get_mileage_info(current_user):
+    try:
+        mileage_count = database.get_mileage_count(current_user)
+        donation_count = database.get_donation_count(current_user)
+        current_mileage = database.get_user_mileage(current_user)
+        coupons = database.get_user_coupon(current_user)
+        print(mileage_count,donation_count, current_mileage)
+        response = {
+            'current_mileage': current_mileage,
+            'mileage_count': mileage_count,
+            'donation_count': donation_count,
+            'coupons': coupons
+        }
+        return jsonify({'result': response}), 200
+    except Exception as e:
+        app.logger.debug(e)
+        return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}

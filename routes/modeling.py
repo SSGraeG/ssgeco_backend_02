@@ -1,13 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Flask
 from functools import wraps
 from keras.models import load_model  # TensorFlow is required for Keras to work
 from PIL import Image, ImageOps  # Install pillow instead of PIL
 import numpy as np
 from authenticated_users import authenticated_users
 from . import database_api as database
+from flask import Flask
 
-
+app = Flask(__name__)
 model_bp = Blueprint('model_bp', __name__)
+
 # 토큰 유효성 검사 및 인증된 요청 처리
 def token_required(f):
     @wraps(f)
@@ -19,12 +21,13 @@ def token_required(f):
 
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
-
-        if token in authenticated_users:
-            current_user = authenticated_users[token]
+        
+        is_user = database.get_user_by_token(token)
+        if is_user:
+            current_user = is_user
         else:
             return jsonify({'message': 'Token is invalid!'}), 401
-        print(current_user)
+        app.logger.debug(current_user)
         return f(current_user, *args, **kwargs)
 
     return decorated
@@ -35,10 +38,10 @@ def predict_image(file):
         np.set_printoptions(suppress=True)
 
         # Load the model
-        model = load_model("keras_Model.h5", compile=False)
+        model = load_model("/home/ubuntu/ssg_backend/keras_model.h5", compile=False)
 
         # Load the labels
-        class_names = open("labels.txt", "r").readlines()
+        class_names = open("/home/ubuntu/ssg_backend/labels.txt", "r").readlines()
 
         # Create the array of the right shape to feed into the keras model
         # The 'length' or number of images you can put into the array is
@@ -67,12 +70,12 @@ def predict_image(file):
         class_name = class_names[index]
         confidence_score = prediction[0][index]
 
-        # Print prediction and confidence score
-        print("Class:", class_name[2:], end="")
-        print("Confidence Score:", confidence_score)
+        # app.logger.debug prediction and confidence score
+        app.logger.debug("Class:", class_name[2:])
+        app.logger.debug("Confidence Score:", confidence_score)
         return class_name[2:]
     except Exception as e:
-        print(e)
+        app.logger.debug(e)
 
 
 
@@ -84,11 +87,11 @@ def image(current_user):
         file = request.files['image']
         result = predict_image(file)
 
-        if result.rstrip() == "remove":
+        if result.rstrip() == "wash":
             current_mileage = database.add_mileage(current_user)
             return jsonify({"message": "성공", "mileage": current_mileage}), 200, {'Content-Type': 'application/json'}
         else:
             return jsonify({"message": "실패"}), 200, {'Content-Type': 'application/json'}
     except Exception as e:
-        print(e)
+        app.logger.debug(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}

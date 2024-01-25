@@ -2,7 +2,8 @@ from flask import Blueprint, Flask, request, jsonify
 from functools import wraps
 from . import database_api as database
 from authenticated_users import authenticated_users
-
+from flask import Flask
+app = Flask(__name__)
 mileage_bp = Blueprint('mileage', __name__)
 
 
@@ -17,12 +18,13 @@ def token_required(f):
 
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
-
-        if token in authenticated_users:
-            current_user = authenticated_users[token]
+        
+        is_user = database.get_user_by_token(token)
+        if is_user:
+            current_user = is_user
         else:
             return jsonify({'message': 'Token is invalid!'}), 401
-
+        app.logger.debug(current_user)
         return f(current_user, *args, **kwargs)
 
     return decorated
@@ -34,7 +36,7 @@ def coupon_list():
         coupon_lists = database.get_coupon()
         return jsonify({'coupon': coupon_lists}), 200
     except Exception as e:  
-        print(e)
+        app.logger.debug(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
 
 
@@ -47,7 +49,7 @@ def coupon_use(current_user):
             current_mileage = database.use_coupon(current_user, coupon_id)
             return jsonify({'mileage': current_mileage}), 200
         except Exception as e:
-            print(e)
+            app.logger.debug(e)
             return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
 
 
@@ -57,7 +59,7 @@ def donation_list():
         donation_lists = database.get_donation()
         return jsonify({'coupon': donation_lists}), 200
     except Exception as e:
-        print(e)
+        app.logger.debug(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
 
 
@@ -67,10 +69,11 @@ def donation_use(current_user):
     if request.method == 'POST':
         try:
             donation_id = request.json.get('donation_id')
+            app.logger.debug(donation_id)
             current_mileage = database.use_donation(current_user, donation_id)
             return jsonify({'mileage': current_mileage}), 200
         except Exception as e:
-            print(e)
+            app.logger.debug(e)
             return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
 
 
@@ -83,5 +86,5 @@ def my_mileage(current_user):
         user_mileage = database.get_user_mileage(current_user)
         return jsonify({'mileage': user_mileage}), 200
     except Exception as e:
-        print(e)
+        app.logger.debug(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
