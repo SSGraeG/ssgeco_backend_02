@@ -89,9 +89,20 @@ def image(current_user):
 
         if result.rstrip() == "wash":
             current_mileage = database.add_mileage(current_user)
-            return jsonify({"message": "성공", "mileage": current_mileage}), 200, {'Content-Type': 'application/json'}
+            count = database.get_mileage_grade(current_user)
+            grade = "prime"
+            point = 100
+            if count < 5:
+                grade = "bronze"
+            elif count < 10:
+                grade = "silver"
+            else:
+                grade = "gold"
+                point = 200
+            return jsonify({"message": "성공", "mileage": current_mileage, "grade": grade, "point": point}), 200, {'Content-Type': 'application/json'}
         else:
             return jsonify({"message": "실패"}), 200, {'Content-Type': 'application/json'}
     except Exception as e:
         app.logger.debug(e)
         return jsonify({"message": "요청중 에러가 발생"}), 500, {'Content-Type': 'application/json'}
+

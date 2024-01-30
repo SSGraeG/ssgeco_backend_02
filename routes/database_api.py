@@ -367,9 +367,21 @@ def add_mileage(user_email):
     try:
         with connect(**connectionString) as con:
             cursor = con.cursor()
+            
+            count = get_mileage_grade(user_email)
+            grade = "prime"
+            point = 100
+            
+            if count < 5:
+                grade = "bronze"
+            elif count < 10:
+                grade = "silver"
+            else:
+                grade = "gold"
+                point = 200
 
-            sql = "UPDATE user SET mileage = mileage + 100 WHERE email = %s"
-            cursor.execute(sql, (user_email, ))
+            sql = "UPDATE user SET mileage = mileage + %s WHERE email = %s"
+            cursor.execute(sql, (point, user_email))
             con.commit()
 
             select_sql = "SELECT mileage FROM user WHERE email = %s"
@@ -388,7 +400,6 @@ def add_mileage(user_email):
 
     except Exception as e:
         app.logger.debug(e)
-
 
 def get_mileage_count(user_email):
     try:
