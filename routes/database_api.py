@@ -422,3 +422,22 @@ def get_donation_count(user_email):
     except Exception as e:
         app.logger.debug(e)
         return 0
+
+
+def get_mileage_grade(user_email):
+    try:
+        with connect(**connectionString) as con:
+            cursor = con.cursor()
+
+            sql = ("SELECT COUNT(*) as grade "
+                   "FROM mileage_tracking "
+                   "WHERE user_email = %s AND mileage_category_id = 1")
+            
+            cursor.execute(sql, (user_email,))
+            grade = cursor.fetchone()['grade']
+            
+            return grade
+
+    except Exception as e:
+        app.logger.debug(e)
+        return 0
